@@ -1,86 +1,80 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node {
-    int val;
-    struct Node *left;
-    struct Node *right;
+typedef struct node {
+    int value;
+    struct node *left, *right;
 } Node;
 
-Node* new_node(int v) {
-    Node* n = (Node*)malloc(sizeof(Node));
-    n->val = v;
-    n->left = NULL;
-    n->right = NULL;
-    return n;
-}
-
-Node* insert(Node* root, int v) {
-    if (root == NULL) return new_node(v);
-
-    if (v < root->val)
-        root->left = insert(root->left, v);
-    else
-        root->right = insert(root->right, v);
-
+Node* insert(Node *root, int x) {
+    if (root == NULL) {
+        root = (Node*)malloc(sizeof(Node));
+        root->value = x;
+        root->left = root->right = NULL;
+    }
+    else if (x < root->value) {
+        root->left = insert(root->left, x);
+    }
+    else {
+        root->right = insert(root->right, x);
+    }
     return root;
 }
+typedef struct queue {
+    Node *data[1000];
+    int front, rear;
+} Queue;
 
-void level_order(Node* root) {
-    if (root == NULL) return;
+void initQueue(Queue *q) {
+    q->front = q->rear = 0;
+}
 
-    Node** queue = (Node**)malloc(10000 * sizeof(Node*));
-    int ini = 0, fim = 0;
+int empty(Queue *q) {
+    return q->front == q->rear;
+}
 
-    queue[fim++] = root;
+void push(Queue *q, Node *x) {
+    q->data[q->rear++] = x;
+}
+
+Node* pop(Queue *q) {
+    return q->data[q->front++];
+}
+void levelOrder(Node *root) {
+    Queue q;
+    initQueue(&q);
+
+    push(&q, root);
     int first = 1;
 
-    while (ini < fim) {
-        Node* cur = queue[ini++];
+    while (!empty(&q)) {
+        Node *n = pop(&q);
 
-        if (first) {
-            printf("%d", cur->val);
-            first = 0;
-        } else {
-            printf(" %d", cur->val);
-        }
+        if (!first) printf(" ");
+        printf("%d", n->value);
+        first = 0;
 
-        if (cur->left)  queue[fim++] = cur->left;
-        if (cur->right) queue[fim++] = cur->right;
+        if (n->left) push(&q, n->left);
+        if (n->right) push(&q, n->right);
     }
-
-    printf("\n");
-    free(queue);
 }
-
-void free_tree(Node* root) {
-    if (root == NULL) return;
-    free_tree(root->left);
-    free_tree(root->right);
-    free(root);
-}
-
 int main() {
-    int t;
-    scanf("%d", &t);
+    int C, N, x;
 
-    for (int c = 1; c <= t; c++) {
-        int n;
-        scanf("%d", &n);
+    scanf("%d", &C);
+    for (int c = 1; c <= C; c++) {
 
-        Node* root = NULL;
+        Node *root = NULL;
 
-        for (int i = 0; i < n; i++) {
-            int x;
+        scanf("%d", &N);
+        for (int i = 0; i < N; i++) {
             scanf("%d", &x);
             root = insert(root, x);
         }
 
         printf("Case %d:\n", c);
-        level_order(root);
-        printf("\n");
-
-        free_tree(root);
+        levelOrder(root);
+        printf("\n\n");
     }
 
     return 0;
